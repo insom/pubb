@@ -1,4 +1,4 @@
-import time, json, base64
+import time, json, base64, requests
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -152,3 +152,38 @@ def sign(body, hostname, path):
         "date": now,
     }
     requests.post("https://%s%s" % (hostname, path), data=body, headers=headers)
+
+def upload():
+    my_url = "https://%(HOSTNAME)s/u/%(USERNAME)s" % app.config
+    data = json.dumps(
+            {
+                "@context": [
+                    "https://www.w3.org/ns/activitystreams",
+                ],
+                "id": my_url + "/2",
+                "actor": my_url,
+                "type": "Delete",
+                "to": ["https://tiny.tilde.website/users/insom"],
+                "object": {
+                    "@context": [
+                        "https://www.w3.org/ns/activitystreams",
+                    ],
+                    "id": my_url + "/2",
+                    "type": "Tombstone",
+                    "attributedTo": my_url,
+                    "published": "2004-02-12T15:19:21+00:00",
+                    "updated": "2024-02-12T15:19:21+00:00",
+                    "deleted": "2024-02-12T15:19:21+00:00",
+                    "to": ["https://tiny.tilde.website/users/insom"],
+                    "attachment": [
+                        {
+                            "type": "Image",
+                            "mediaType": "image/jpeg",
+                            "url": "https://sbom.tilde.website/media_attachments/files/109/372/182/276/406/005/original/2beeeb503ce50dff.jpg",
+                            "name": "", # alt text
+                        }
+                    ]
+                }
+            }
+    )
+    sign(data, "tiny.tilde.website", "/inbox")
