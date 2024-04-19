@@ -49,3 +49,34 @@ def user(username):
     "url": app.config['ICON'],
   },
   }), 200, {'Content-type': 'application/activity+json'})
+
+@app.route("/following")
+def following():
+    my_url = "https://%(HOSTNAME)s/u/%(USERNAME)s" % app.config
+    return (jsonify({
+  "@context": "https://www.w3.org/ns/activitystreams",
+  "id": "https://%(HOSTNAME)s/following" % app.config,
+  "type": "Collection",
+  "totalItems": 0,
+  "items": [],
+  }), 200, {'Content-type': 'application/activity+json'})
+
+@app.route("/followers")
+def followers():
+    my_url = "https://%(HOSTNAME)s/u/%(USERNAME)s" % app.config
+    return (jsonify({
+  "@context": "https://www.w3.org/ns/activitystreams",
+  "id": "https://%(HOSTNAME)s/followers" % app.config,
+  "type": "Collection",
+  "totalItems": 0,
+  "items": [],
+  }), 200, {'Content-type': 'application/activity+json'})
+
+@app.route("/inbox", methods=["POST"])
+def inbox():
+    j = request.get_json(force=True)
+    import time
+    import json
+    f = open("%d.json" % time.time(), 'w')
+    f.write(json.dumps(j))
+    return ('', 201, {})
