@@ -121,6 +121,7 @@ def sign(body, hostname, path):
     now = formatdate(usegmt=True)
     pk = RSA.import_key(open("private.key").read())
     post_hash = SHA256.new(body.encode("u8")).digest()
+    post_hash_decoded = base64.b64encode(post_hash).decode()
 
     headers = (
         "(request-target): post "
@@ -133,7 +134,7 @@ def sign(body, hostname, path):
         + now
         + "\n"
         + "digest: SHA-256="
-        + base64.b64encode(post_hash).decode()
+        + post_hash_decoded
     )
     signature = base64.b64encode(
         pkcs1_15.new(pk).sign(SHA256.new(headers.encode("u8")))
@@ -143,4 +144,11 @@ def sign(body, hostname, path):
         'keyId="%s", algorithm="rsa-sha256", headers="(request-target) host date digest", signature="%s"'
         % (keyId, signature)
     )
-    print(sig_header)
+    headers = {
+        "signature": sig_header,
+        "host": hostname,
+        "digest": "SHA-256=" + post_hash_decoded,
+        "content-type": "application/activity+json",
+        "date": now,
+    }
+    requests.post("https://%s%s" % (hostname, path), data=body, headers=headers)
